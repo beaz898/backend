@@ -1,0 +1,21 @@
+{
+  "name": "documentation-hub-backend",
+  "version": "1.0.0",
+  "description": "Backend seguro para Documentation Hub",
+  "private": true,
+  "engines": {
+    "node": "18.x"
+  },
+  "scripts": {
+    "dev": "node --watch api/ask.js",
+    "build": "echo 'No build needed for serverless functions'"
+  },
+  "keywords": [
+    "documentation",
+    "chatbot",
+    "claude",
+    "anthropic"
+  ],
+  "author": "",
+  "license": "MIT"
+}
