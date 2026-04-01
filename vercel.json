@@ -6,12 +6,20 @@
     "api/ask.js": {
       "memory": 1024,
       "maxDuration": 30
+    },
+    "api/gemini.js": {
+      "memory": 1024,
+      "maxDuration": 30
     }
   },
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/ask.js"
+      "src": "/api/ask",
+      "dest": "/api/ask.js"
+    },
+    {
+      "src": "/api/gemini",
+      "dest": "/api/gemini.js"
     }
   ],
   "headers": [
