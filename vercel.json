@@ -1,21 +1,18 @@
 {
   "version": 2,
+  "buildCommand": "echo 'No build needed'",
+  "outputDirectory": ".",
   "functions": {
     "api/ask.js": {
       "memory": 1024,
-      "maxDuration": 30
+      "maxDuration": 30,
+      "runtime": "nodejs24.x"
     }
   },
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/ask",
-      "dest": "/api/ask.js",
-      "methods": ["GET", "POST", "OPTIONS"]
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/ask.js",
-      "methods": ["GET", "POST", "OPTIONS"]
+      "source": "/api/(.*)",
+      "destination": "/api/ask.js"
     }
   ],
   "headers": [
