@@ -7,15 +7,10 @@
     "node": "24.x"
   },
   "scripts": {
-    "dev": "node --watch api/ask.js",
-    "build": "echo 'No build needed for serverless functions'"
+    "dev": "node api/ask.js",
+    "build": "echo Building..."
   },
-  "keywords": [
-    "documentation",
-    "chatbot",
-    "claude",
-    "anthropic"
-  ],
+  "keywords": ["documentation", "chatbot", "claude", "anthropic"],
   "author": "",
   "license": "MIT"
 }
