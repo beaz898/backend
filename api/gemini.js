@@ -1,6 +1,6 @@
 /**
- * DOCUMENTATION HUB - GOOGLE GEMINI BACKEND
- * Para Vercel - Serverless Function
+ * DOCUMENTATION HUB - GOOGLE GEMINI BACKEND CORREGIDO
+ * Para Vercel
  * 
  * Coloca en: /api/gemini.js
  */
@@ -8,7 +8,7 @@
 export default async function handler(req, res) {
     // CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST,PUT');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
     if (req.method === 'OPTIONS') {
@@ -23,18 +23,22 @@ export default async function handler(req, res) {
     }
 
     try {
+        console.log('=== Gemini Backend Request ===');
+        
         const { apiKey, question, documents } = req.body;
 
         // Validar inputs
         if (!apiKey || !question || !Array.isArray(documents)) {
+            console.error('Invalid input parameters');
             return res.status(400).json({
                 error: 'Parámetros inválidos',
                 code: 'INVALID_INPUT'
             });
         }
 
-        // Validar API key de Google
+        // Validar API key
         if (typeof apiKey !== 'string' || !apiKey.startsWith('AIza') || apiKey.length < 30) {
+            console.error('Invalid API key format');
             return res.status(401).json({
                 error: 'API key inválida. Debe empezar con AIza',
                 code: 'INVALID_API_KEY'
@@ -61,6 +65,7 @@ export default async function handler(req, res) {
                 })
                 .join('\n\n---\n\n');
         } catch (e) {
+            console.error('Error processing documents:', e);
             return res.status(400).json({
                 error: 'Error al procesar documentos',
                 code: 'INVALID_DOCUMENTS'
@@ -74,7 +79,7 @@ export default async function handler(req, res) {
             });
         }
 
-        // Construir prompt para Gemini
+        // Construir prompt
         const systemPrompt = `Eres un asistente inteligente para documentación empresarial.
 Responde ÚNICAMENTE basándote en los documentos proporcionados.
 
@@ -96,70 +101,71 @@ ${sanitizedQuestion}
 
 RESPUESTA:`;
 
-        // Llamar a Google Gemini API
-        console.log('📡 Enviando request a Gemini API...');
+        console.log('Calling Gemini API...');
+        
+        // URL correcta para Gemini
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
-        const geminiResponse = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    contents: [
-                        {
-                            parts: [
-                                {
-                                    text: fullPrompt
-                                }
-                            ]
-                        }
-                    ],
-                    safetySettings: [
-                        {
-                            category: 'HARM_CATEGORY_UNSPECIFIED',
-                            threshold: 'BLOCK_NONE'
-                        }
-                    ],
-                    generationConfig: {
-                        temperature: 0.7,
-                        topK: 40,
-                        topP: 0.95,
-                        maxOutputTokens: 1024,
+        const geminiResponse = await fetch(geminiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                contents: [
+                    {
+                        parts: [
+                            {
+                                text: fullPrompt
+                            }
+                        ]
                     }
-                })
-            }
-        );
+                ],
+                generationConfig: {
+                    temperature: 0.7,
+                    maxOutputTokens: 1024,
+                }
+            })
+        });
 
-        console.log('📬 Status Gemini:', geminiResponse.status);
+        console.log('Gemini response status:', geminiResponse.status);
 
         if (!geminiResponse.ok) {
-            const errorData = await geminiResponse.json();
-            console.error('Gemini error:', errorData);
+            const errorData = await geminiResponse.json().catch(() => ({}));
+            console.error('Gemini error response:', errorData);
 
             if (geminiResponse.status === 400) {
-                // Bad request - probablemente API key inválida o formato incorrecto
+                console.error('Bad request to Gemini');
                 if (errorData.error?.message?.includes('API key')) {
                     return res.status(401).json({
-                        error: 'API key inválida o expirada',
+                        error: 'API key inválida. Verifica que empiece con AIza',
                         code: 'INVALID_API_KEY'
                     });
                 }
                 return res.status(400).json({
-                    error: 'Solicitud inválida: ' + (errorData.error?.message || 'error desconocido'),
+                    error: 'Solicitud inválida a Gemini',
                     code: 'BAD_REQUEST'
                 });
             }
 
             if (geminiResponse.status === 403) {
+                console.error('Forbidden - API key issue');
                 return res.status(403).json({
-                    error: 'Acceso denegado. Verifica tu API key de Google Gemini.',
+                    error: 'Acceso denegado. Verifica tu API key de Google.',
                     code: 'FORBIDDEN'
                 });
             }
 
+            if (geminiResponse.status === 401) {
+                console.error('Unauthorized');
+                return res.status(401).json({
+                    error: 'API key no autorizada. Crea una nueva en aistudio.google.com',
+                    code: 'UNAUTHORIZED'
+                });
+            }
+
             if (geminiResponse.status === 429) {
+                console.error('Rate limit');
                 return res.status(429).json({
                     error: 'Límite de Gemini excedido. Intenta en unos segundos.',
                     code: 'RATE_LIMIT'
@@ -167,23 +173,26 @@ RESPUESTA:`;
             }
 
             if (geminiResponse.status >= 500) {
+                console.error('Server error');
                 return res.status(503).json({
-                    error: 'Servidores de Google no disponibles. Intenta más tarde.',
+                    error: 'Servidores de Google no disponibles.',
                     code: 'SERVER_ERROR'
                 });
             }
 
+            console.error('Other Gemini error:', geminiResponse.status);
             return res.status(geminiResponse.status).json({
-                error: errorData.error?.message || 'Error en Gemini API',
+                error: 'Error en Gemini API: ' + (errorData.error?.message || 'desconocido'),
                 code: 'GEMINI_ERROR'
             });
         }
 
         const data = await geminiResponse.json();
-        console.log('✅ Respuesta de Gemini recibida');
+        console.log('Gemini response successful');
 
-        // Extraer texto de la respuesta
-        if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+        // Extraer texto
+        if (!data.candidates || !data.candidates[0]?.content?.parts) {
+            console.error('Invalid Gemini response structure');
             return res.status(500).json({
                 error: 'Respuesta inválida de Gemini',
                 code: 'INVALID_RESPONSE'
@@ -192,34 +201,22 @@ RESPUESTA:`;
 
         const responseText = data.candidates[0].content.parts[0].text;
 
+        console.log('Success - returning response');
         return res.status(200).json({
             success: true,
             response: responseText,
-            model: 'gemini-pro',
-            usage: {
-                promptTokens: data.usageMetadata?.promptTokenCount || 0,
-                outputTokens: data.usageMetadata?.candidatesTokenCount || 0
-            }
+            model: 'gemini-1.5-flash'
         });
 
     } catch (error) {
         console.error('Unhandled error:', error);
-
-        let errorCode = 'INTERNAL_ERROR';
-        let errorMsg = 'Error interno del servidor';
-
-        if (error.message.includes('fetch')) {
-            errorCode = 'NETWORK_ERROR';
-            errorMsg = 'Error de conectividad con Gemini API';
-        } else if (error.message.includes('JSON')) {
-            errorCode = 'JSON_ERROR';
-            errorMsg = 'Error al procesar JSON';
-        }
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
 
         return res.status(500).json({
-            error: errorMsg,
-            code: errorCode,
-            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+            error: 'Error interno: ' + error.message,
+            code: 'INTERNAL_ERROR',
+            details: error.message
         });
     }
 }
