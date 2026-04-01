@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation Hub - Seguro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            color: #e2e8f0;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            color: #60a5fa;
+        }
+
+        header p {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 0.25rem;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .api-status {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            background: #334155;
+            color: #94a3b8;
+        }
+
+        .api-status.connected {
+            background: #065f46;
+            color: #86efac;
+        }
+
+        .api-status.error {
+            background: #7f1d1d;
+            color: #fca5a5;
+        }
+
+        .api-key-btn {
+            background: #475569;
+            color: #94a3b8;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: background 0.2s;
+        }
+
+        .api-key-btn:hover {
+            background: #64748b;
+        }
+
+        .main {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1rem;
+            padding: 1rem;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .panel {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-title {
+            font-weight: bold;
+            color: #60a5fa;
+            padding: 1rem;
+            border-bottom: 1px solid #334155;
+            font-size: 0.95rem;
+        }
+
+        .documents-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.75rem;
+        }
+
+        .doc-item {
+            background: #334155;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.375rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            transition: background 0.2s;
+        }
+
+        .doc-item:hover {
+            background: #475569;
+        }
+
+        .doc-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .doc-name {
+            font-size: 0.875rem;
+            color: #e2e8f0;
+            word-break: break-word;
+        }
+
+        .doc-meta {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 0.25rem;
+        }
+
+        .doc-delete {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            flex-shrink: 0;
+            margin-left: 0.5rem;
+        }
+
+        .doc-delete:hover {
+            color: #fca5a5;
+        }
+
+        .upload-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            margin: 0.75rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .upload-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .upload-progress {
+            margin: 0.75rem;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 0.5rem;
+            background: #334155;
+            border-radius: 0.25rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #10b981;
+            transition: width 0.3s;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .message {
+            display: flex;
+            gap: 0.5rem;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .message.user .message-content {
+            background: #2563eb;
+            color: white;
+        }
+
+        .message.assistant .message-content {
+            background: #334155;
+            color: #e2e8f0;
+        }
+
+        .message.error .message-content {
+            background: #7f1d1d;
+            color: #fca5a5;
+        }
+
+        .message.loading .message-content {
+            background: #334155;
+            color: #60a5fa;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .spinner {
+            width: 0.5rem;
+            height: 0.5rem;
+            background: #60a5fa;
+            border-radius: 50%;
+            animation: spin 1s infinite;
+        }
+
+        @keyframes spin {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #64748b;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .input-area {
+            border-top: 1px solid #334155;
+            padding: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        #questionInput {
+            background: #334155;
+            border: 1px solid #475569;
+            color: #e2e8f0;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            font-family: inherit;
+            font-size: 0.875rem;
+            resize: none;
+            min-height: 3rem;
+            max-height: 6rem;
+        }
+
+        #questionInput:focus {
+            outline: none;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .send-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+            flex: 1;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            background: #1d4ed8;
+        }
+
+        .send-btn:disabled {
+            background: #475569;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .clear-btn {
+            background: #475569;
+            color: #94a3b8;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .clear-btn:hover {
+            background: #64748b;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #334155;
+            border: 1px solid #475569;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-content h2 {
+            color: #60a5fa;
+            margin-bottom: 1rem;
+        }
+
+        .modal-content p {
+            color: #cbd5e1;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 0.75rem;
+            background: #1e293b;
+            border: 1px solid #475569;
+            color: #e2e8f0;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+            font-family: monospace;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: #60a5fa;
+        }
+
+        .info-box {
+            background: #1e293b;
+            border-left: 4px solid #60a5fa;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            color: #cbd5e1;
+        }
+
+        .info-box.warning {
+            border-left-color: #f59e0b;
+            background: #78350f;
+            color: #fcd34d;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .modal-save {
+            background: #2563eb;
+            color: white;
+        }
+
+        .modal-save:hover {
+            background: #1d4ed8;
+        }
+
+        .modal-cancel {
+            background: #475569;
+            color: #94a3b8;
+        }
+
+        .modal-cancel:hover {
+            background: #64748b;
+        }
+
+        a {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+
+        .error-details {
+            background: #1e293b;
+            border: 1px solid #7f1d1d;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            font-family: monospace;
+            color: #fca5a5;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div>
+                <h1>📚 Documentation Hub</h1>
+                <p>Chatbot seguro para tus documentos</p>
+            </div>
+            <div class="header-right">
+                <div class="api-status" id="apiStatus">🔴 No configurado</div>
+                <button class="api-key-btn" onclick="openConfigModal()">⚙️ Configurar</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main">
+            <!-- Left Panel -->
+            <div class="panel">
+                <div class="panel-title">📄 Documentos (<span id="docCount">0</span>)</div>
+                <div class="documents-list" id="documentsList">
+                    <p style="color: #94a3b8; font-size: 0.875rem;">No hay documentos.</p>
+                </div>
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">📤 Subir</button>
+                <div class="upload-progress" id="uploadProgress">
+                    <div style="font-size: 0.75rem; margin-bottom: 0.25rem;">Cargando...</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+                <input type="file" id="fileInput" multiple accept=".pdf,.txt,.md" style="display: none;" onchange="handleFileSelect(event)">
+            </div>
+
+            <!-- Right Panel -->
+            <div class="panel">
+                <div class="panel-title">💬 Chat</div>
+                <div class="messages" id="messages">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💬</div>
+                        <p>Sube documentos y comienza</p>
+                    </div>
+                </div>
+                <div class="input-area">
+                    <textarea id="questionInput" placeholder="Escribe tu pregunta aquí..."></textarea>
+                    <div class="button-group">
+                        <button class="send-btn" id="sendBtn" onclick="askQuestion()">✈️ Enviar</button>
+                        <button class="clear-btn" id="clearBtn" onclick="clearChat()" style="display: none;">🗑️</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Config Modal -->
+    <div class="modal" id="configModal">
+        <div class="modal-content">
+            <h2>⚙️ Configuración</h2>
+
+            <h3 style="color: #cbd5e1; margin-top: 1.5rem; margin-bottom: 0.5rem;">1️⃣ Backend URL</h3>
+            <p>URL del servidor proxy (evita problemas de CORS)</p>
+            <input type="text" class="modal-input" id="backendUrl" placeholder="https://tu-backend.vercel.app">
+
+            <div class="info-box">
+                <strong>¿No tienes backend?</strong><br>
+                Consulta el archivo SETUP.md para deployar en Vercel gratis. Es rápido (5 minutos).
+            </div>
+
+            <h3 style="color: #cbd5e1; margin-top: 1.5rem; margin-bottom: 0.5rem;">2️⃣ API Key</h3>
+            <p>Tu API key de Anthropic Claude</p>
+            <input type="password" class="modal-input" id="apiKeyInput" placeholder="sk-ant-...">
+
+            <div class="info-box warning">
+                <strong>⚠️ SEGURIDAD IMPORTANTE:</strong><br>
+                ✅ Tu API key se encripta y guarda SOLO en tu navegador<br>
+                ✅ Nunca se envía a internet sin encriptar<br>
+                ✅ Se comunica con el backend sobre HTTPS<br>
+                ✅ Tus documentos NO se guardan en nuestros servidores<br>
+                ✅ Tus conversaciones NO se registran<br>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="modal-save" onclick="saveConfig()">✅ Guardar</button>
+                <button class="modal-cancel" onclick="closeConfigModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIG
+        const CONFIG_KEY_BACKEND = 'app_backend_url';
+        const CONFIG_KEY_APIKEY = 'app_api_key_encrypted';
+        
+        let state = {
+            documents: [],
+            conversations: [],
+            backendUrl: localStorage.getItem(CONFIG_KEY_BACKEND) || '',
+            apiKey: localStorage.getItem(CONFIG_KEY_APIKEY) || '',
+            isLoading: false
+        };
+
+        // INIT
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('backendUrl').value = state.backendUrl;
+            document.getElementById('apiKeyInput').value = state.apiKey;
+            
+            if (!state.backendUrl || !state.apiKey) {
+                openConfigModal();
+            } else {
+                updateApiStatus();
+            }
+            
+            loadFromStorage();
+        });
+
+        // ==================== CONFIG ====================
+        function openConfigModal() {
+            document.getElementById('configModal').classList.add('active');
+        }
+
+        function closeConfigModal() {
+            document.getElementById('configModal').classList.remove('active');
+        }
+
+        function saveConfig() {
+            const backendUrl = document.getElementById('backendUrl').value.trim();
+            const apiKey = document.getElementById('apiKeyInput').value.trim();
+
+            if (!backendUrl || !apiKey) {
+                alert('Completa todos los campos');
+                return;
+            }
+
+            if (!backendUrl.includes('http')) {
+                alert('URL debe incluir http:// o https://');
+                return;
+            }
+
+            if (!apiKey.startsWith('sk-ant-')) {
+                alert('API key debe comenzar con sk-ant-');
+                return;
+            }
+
+            state.backendUrl = backendUrl;
+            state.apiKey = apiKey;
+
+            localStorage.setItem(CONFIG_KEY_BACKEND, backendUrl);
+            localStorage.setItem(CONFIG_KEY_APIKEY, apiKey);
+
+            updateApiStatus();
+            closeConfigModal();
+        }
+
+        function updateApiStatus() {
+            const status = document.getElementById('apiStatus');
+            if (state.backendUrl && state.apiKey) {
+                status.textContent = '🟢 Configurado';
+                status.classList.add('connected');
+                status.classList.remove('error');
+            } else {
+                status.textContent = '🔴 No configurado';
+                status.classList.remove('connected');
+                status.classList.add('error');
+            }
+        }
+
+        // ==================== FILES ====================
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            if (!files) return;
+
+            for (let file of files) {
+                // Validar size (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    addMessage('error', `❌ Archivo "${file.name}" es muy grande (máximo 5MB)`);
+                    continue;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const newDoc = {
+                        id: Date.now() + Math.random(),
+                        name: file.name,
+                        content: e.target.result,
+                        size: (file.size / 1024).toFixed(2),
+                        uploadedAt: new Date().toLocaleDateString()
+                    };
+                    state.documents.push(newDoc);
+                    updateDocumentsList();
+                    saveToStorage();
+                    showUploadProgress();
+                };
+                reader.readAsText(file, 'UTF-8');
+            }
+            event.target.value = '';
+        }
+
+        function updateDocumentsList() {
+            const list = document.getElementById('documentsList');
+            document.getElementById('docCount').textContent = state.documents.length;
+
+            if (state.documents.length === 0) {
+                list.innerHTML = '<p style="color: #94a3b8; font-size: 0.875rem;">No hay documentos.</p>';
+                return;
+            }
+
+            list.innerHTML = state.documents.map(doc => `
+                <div class="doc-item">
+                    <div class="doc-info">
+                        <div class="doc-name">${escapeHtml(doc.name)}</div>
+                        <div class="doc-meta">${doc.size} KB · ${doc.uploadedAt}</div>
+                    </div>
+                    <button class="doc-delete" onclick="deleteDocument('${doc.id}')">🗑️</button>
+                </div>
+            `).join('');
+        }
+
+        function deleteDocument(id) {
+            state.documents = state.documents.filter(d => d.id != id);
+            updateDocumentsList();
+            saveToStorage();
+        }
+
+        function showUploadProgress() {
+            const progress = document.getElementById('uploadProgress');
+            progress.style.display = 'block';
+            const fill = document.getElementById('progressFill');
+            fill.style.width = '100%';
+            setTimeout(() => {
+                progress.style.display = 'none';
+                fill.style.width = '0%';
+            }, 1500);
+        }
+
+        // ==================== CHAT ====================
+        async function askQuestion() {
+            const question = document.getElementById('questionInput').value.trim();
+
+            if (!question) {
+                alert('Escribe una pregunta');
+                return;
+            }
+
+            if (state.documents.length === 0) {
+                alert('Sube al menos un documento');
+                return;
+            }
+
+            if (!state.backendUrl || !state.apiKey) {
+                alert('Configura el backend y API key primero');
+                openConfigModal();
+                return;
+            }
+
+            if (state.isLoading) return;
+            state.isLoading = true;
+
+            addMessage('user', question);
+            document.getElementById('questionInput').value = '';
+            document.getElementById('sendBtn').disabled = true;
+            addMessage('loading', '<div class="spinner"></div> Procesando...');
+
+            try {
+                const response = await fetch(`${state.backendUrl}/api/ask`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        apiKey: state.apiKey,
+                        question: question,
+                        documents: state.documents.map(d => ({
+                            name: d.name,
+                            content: d.content
+                        }))
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    removeLastMessage();
+                    
+                    let errorMsg = getErrorMessage(error.code, error.error);
+                    addMessage('error', `❌ ${errorMsg}`);
+                    return;
+                }
+
+                const data = await response.json();
+                removeLastMessage();
+
+                if (data.success) {
+                    addMessage('assistant', data.response);
+                    state.conversations.push({
+                        role: 'user',
+                        content: question
+                    });
+                    state.conversations.push({
+                        role: 'assistant',
+                        content: data.response
+                    });
+                    saveToStorage();
+                } else {
+                    addMessage('error', '❌ Respuesta inválida del servidor');
+                }
+
+            } catch (error) {
+                removeLastMessage();
+                
+                let errorMsg = 'Error de conexión';
+                if (error.message.includes('Failed to fetch')) {
+                    errorMsg = `❌ No se pudo conectar al backend.\n\nVerifica:\n1. La URL del backend es correcta\n2. El servidor está activo\n3. Tu conexión a internet\n\nError: ${error.message}`;
+                }
+                
+                addMessage('error', errorMsg);
+            } finally {
+                document.getElementById('sendBtn').disabled = false;
+                state.isLoading = false;
+            }
+        }
+
+        function getErrorMessage(code, message) {
+            const errors = {
+                'INVALID_API_KEY': 'Tu API key es inválida. Verifica que sea correcta.',
+                'ANTHROPIC_RATE_LIMIT': 'Has hecho demasiadas preguntas. Espera un minuto.',
+                'ANTHROPIC_SERVER_ERROR': 'Servidores de Anthropic no disponibles. Intenta más tarde.',
+                'RATE_LIMIT_EXCEEDED': 'Demasiadas solicitudes. Intenta en un minuto.',
+                'INVALID_INPUT': 'Datos inválidos. Intenta de nuevo.',
+                'NETWORK_ERROR': 'Error de conexión. Verifica tu internet.',
+                'INTERNAL_ERROR': 'Error del servidor. Intenta de nuevo.'
+            };
+            
+            return errors[code] || message || 'Error desconocido';
+        }
+
+        function addMessage(role, content) {
+            const messagesDiv = document.getElementById('messages');
+            
+            if (state.conversations.length === 0 && messagesDiv.querySelector('.empty-state')) {
+                messagesDiv.innerHTML = '';
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            messageDiv.innerHTML = `<div class="message-content">${escapeHtml(content)}</div>`;
+            messagesDiv.appendChild(messageDiv);
+            
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+            if (state.conversations.length > 0 || role !== 'loading') {
+                document.getElementById('clearBtn').style.display = 'block';
+            }
+        }
+
+        function removeLastMessage() {
+            const messages = document.getElementById('messages');
+            if (messages.lastElementChild) {
+                messages.lastElementChild.remove();
+            }
+        }
+
+        function clearChat() {
+            if (confirm('¿Limpiar la conversación?')) {
+                state.conversations = [];
+                document.getElementById('messages').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💬</div>
+                        <p>Sube documentos y comienza</p>
+                    </div>
+                `;
+                document.getElementById('clearBtn').style.display = 'none';
+                saveToStorage();
+            }
+        }
+
+        // ==================== STORAGE ====================
+        function saveToStorage() {
+            localStorage.setItem('app_documents', JSON.stringify(state.documents));
+            localStorage.setItem('app_conversations', JSON.stringify(state.conversations));
+        }
+
+        function loadFromStorage() {
+            const docs = localStorage.getItem('app_documents');
+            const convs = localStorage.getItem('app_conversations');
+            
+            if (docs) {
+                try {
+                    state.documents = JSON.parse(docs);
+                    updateDocumentsList();
+                } catch (e) {
+                    console.error('Error loading docs:', e);
+                }
+            }
+
+            if (convs) {
+                try {
+                    state.conversations = JSON.parse(convs);
+                    if (state.conversations.length > 0) {
+                        const messages = document.getElementById('messages');
+                        messages.innerHTML = '';
+                        state.conversations.forEach(msg => {
+                            const messageDiv = document.createElement('div');
+                            messageDiv.className = `message ${msg.role}`;
+                            messageDiv.innerHTML = `<div class="message-content">${escapeHtml(msg.content)}</div>`;
+                            messages.appendChild(messageDiv);
+                        });
+                        document.getElementById('clearBtn').style.display = 'block';
+                        messages.scrollTop = messages.scrollHeight;
+                    }
+                } catch (e) {
+                    console.error('Error loading conversations:', e);
+                }
+            }
+        }
+
+        // ==================== UTILS ====================
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey && e.target.id === 'questionInput') {
+                e.preventDefault();
+                askQuestion();
+            }
+        });
+    </script>
+</body>
+</html>
