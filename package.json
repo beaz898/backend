@@ -4,7 +4,7 @@
   "description": "Backend seguro para Documentation Hub",
   "private": true,
   "engines": {
-    "node": "18.x"
+    "node": "24.x"
   },
   "scripts": {
     "dev": "node --watch api/ask.js",
